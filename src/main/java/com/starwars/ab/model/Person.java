@@ -2,8 +2,12 @@ package com.starwars.ab.model;
 
 import java.util.ArrayList;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.starwars.ab.util.StarWarsDate;
+
+@Component
 public class Person {
 	private String name;
 	@JsonProperty("birth_year")
@@ -30,6 +34,28 @@ public class Person {
     private ArrayList<String> starshipsUrls;
 	@JsonProperty("vehicles")
     private ArrayList<String> vehiclesUrls;
+	
+	public double getBirthYearSWDate(){
+		StarWarsDate swDate = new StarWarsDate();
+		
+		return swDate.convert(birthYear);
+	}
+	
+	public String getSpecieId(){
+		if (this.speciesUrls == null || this.speciesUrls.isEmpty()) return "unknow";
+		System.out.println(this.speciesUrls);
+
+		String[] parts = this.speciesUrls.get(0).split("/");
+		return parts[5];
+	}
+	
+	public String getId(){
+		if (this.url == null) return "unknow";
+		System.out.println(this.url);
+
+		String[] parts = this.url.split("/");
+		return parts[5];
+	}
 	
     public String getName() {
 		return name;
@@ -121,7 +147,4 @@ public class Person {
 	public void setVehiclesUrls(ArrayList<String> vehiclesUrls) {
 		this.vehiclesUrls = vehiclesUrls;
 	}
-    
-    
-    
 }

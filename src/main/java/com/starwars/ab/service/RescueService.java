@@ -1,59 +1,102 @@
 package com.starwars.ab.service;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.starwars.ab.model.People;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ListMultimap;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
+import com.starwars.ab.model.Person;
 
 @Service
 public class RescueService {
 	
-	private final String FIRSTPAGE = "http://swapi.co/api/people/?format=json&page=1";
 
-	public List<People> rescuePeople(){
+	@Autowired
+	PlanetScanner plannetScanner;
+	@Autowired
+	SpeciesAnalysis speciesAnalysis;
+	
+	public Map<String, List<Person>> rescuePeople(List<String> peopleIds){
 		
-		ObjectMapper mapper = new ObjectMapper();
-		List<People> jsonRequestsResult = new ArrayList<People>();
+		List<Person> allPeople = plannetScanner.getAllPeople();
+		List<Person> peopleToSave = getById(peopleIds, allPeople);
 		
-		try {
-			People people = mapper.readValue(getPeopleJson(FIRSTPAGE), People.class);
-			jsonRequestsResult.add(people);
-			
-			if (people.getNext() != null)
-				jsonRequestsResult.add(
-						mapper.readValue(getPeopleJson(people.getNext()), People.class));
-			
-			
-		} catch (Exception e) {
-			e.printStackTrace();
-		} 
+		return speciesAnalysis.groupBySpecie(peopleToSave);
+	}
+
+	private List<Person> getById(List<String> peopleIds, List<Person> people) {
+		return people.stream()
+			      .filter(p -> peopleIds.contains(p.getId())).collect(Collectors.toList());
+	}
+
+	public Map<String, List<Person>> rescuePeopleWithVehicle(List<String> ids, String vehicle) {
+		List<Person> allPeople = plannetScanner.getAllPeople();
+		List<Person> peopleToSave = getById(ids, allPeople);
+		Map<String, List<Person>> grouped = speciesAnalysis.groupBySpecie(peopleToSave);
 		
-		return jsonRequestsResult;
+		
+		int placesInVehicle = 4; //  "passengers": "4", 
+		
+		ListMultimap<String, List<Person>> travels = ArrayListMultimap.create();
+		
+		
+		travels.putAll((ancientsScapeFirst(grouped, placesInVehicle));
+		travels.putAll(separeteSpeciesInTheShips(grouped, placesInVehicle));
+							
+		return travels;
+	}
+
+	private ListMultimap<String, List<Person>> separeteSpeciesInTheShips(Map<String, List<Person>> grouped,
+			int placesInVehicle) {
+		ListMultimap<String, List<Person>> travels = ArrayListMultimap.create();
+		
+		for (Entry<String, List<Person>> speciesList : grouped.entrySet()){
+			List<List<Person>> smallerLists = Lists.partition(speciesList.getValue(), placesInVehicle);
+		
+			for (List<Person> people : smallerLists){
+				travels.put(speciesList.getKey(), people);
+			}
+			
+		}
+		
+		return travels;
+	}
+
+	private Multimap<? extends String, ? extends List<Person>> ancientsScapeFirst(Map<String, List<Person>> grouped, int placesInVehicle) {
+		
+		List<Person> ancients = getAncientsFromSpecies(grouped);
+		List<List<Person>> smallerLists = Lists.partition(ancients, placesInVehicle);
+		
+		Map<String, List<Person>> travels = new HashMap<String, List<Person>>();
+
+		for (List<Person> people : smallerLists){
+			travels.put("Ancients", people);
+		}
+		
+		return travels;
 	}
 	
-	private String getPeopleJson(String page){
+	private List<Person> getAncientsFromSpecies(Map<String, List<Person>> grouped){
 		
-		RestTemplate rest = new RestTemplate();
-
-		String response = rest.exchange(page,
-		HttpMethod.GET,
-		new HttpEntity<String>(getHttpHeaders()),
-		String.class).getBody();
-
-		return response;
-	}
-	
-	public HttpHeaders getHttpHeaders()
-	{
-		HttpHeaders headers = new HttpHeaders();
-		headers.set("User-Agent", "Mozilla/5.0 (Windows; U; Windows NT 6.1; rv:2.2) Gecko/20110201");
-		return headers;
+		List<Person> ancients = new ArrayList<Person>();
+		
+		for (Entry<String, List<Person>> peopleAndSpecie : grouped.entrySet()){
+			List<Person> people = peopleAndSpecie.getValue();
+			Collections.sort(people, (Person p1, Person p2) ->  Double.compare(p1.getBirthYearSWDate(),p2.getBirthYearSWDate()));
+			
+			ancients.add(people.get(0));
+		}
+		
+		return ancients;
 	}
 }

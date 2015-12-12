@@ -28,34 +28,38 @@ public class PlanetScanner {
 		
 		return allScannedPlanet
 				.stream()
+				.filter(s -> s != null)
 				.flatMap(firstNode -> firstNode.getPerson().stream())
 				.collect(Collectors.toList());
 	}
 
 	private List<Scans> getAllScannedPlanet() {
+		ObjectMapper mapper = new ObjectMapper();
+		List<Scans> jsonRequestsResult = new ArrayList<Scans>();
+		
 		try {
-			List<Scans> jsonRequestsResult = new ArrayList<Scans>();
-			ObjectMapper mapper = new ObjectMapper();
+			Scans inicialScan = mapper.readValue(getPeopleJson(FIRSTPAGE), Scans.class);
+			jsonRequestsResult.add(inicialScan);
+			String next = inicialScan.getNext();
+			
+			while(next != null){
+				System.out.println(next);
 
-			//recursivo
-			Scans people = mapper.readValue(getPeopleJson(FIRSTPAGE), Scans.class);
-			jsonRequestsResult.add(people);
-			
-			if (people.getNext() != null)
-				jsonRequestsResult.add(
-						mapper.readValue(getPeopleJson(people.getNext()), Scans.class));
-			
-			return jsonRequestsResult;
+				Scans newScan = mapper.readValue(getPeopleJson(next), Scans.class);
+				jsonRequestsResult.add(newScan);
+				next= newScan.getNext();
+			}
 
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		
-		return new ArrayList<Scans>();
+		return jsonRequestsResult;
 	}
 	
 	private String getPeopleJson(String page){
-		
+		System.out.println("getPeopleJson");
+
 		RestTemplate rest = new RestTemplate();
 
 		String response = rest.exchange(page,
