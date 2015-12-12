@@ -1,4 +1,4 @@
-package com.starwars.ab.model;
+package com.starwars.ab.domain;
 
 import java.util.ArrayList;
 

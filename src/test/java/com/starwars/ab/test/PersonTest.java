@@ -5,7 +5,7 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
 import com.google.common.collect.Lists;
-import com.starwars.ab.model.Person;
+import com.starwars.ab.domain.Person;
 
 
 public class PersonTest {

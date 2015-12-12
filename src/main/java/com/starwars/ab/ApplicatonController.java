@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.starwars.ab.model.Person;
+import com.starwars.ab.domain.Person;
 import com.starwars.ab.service.RescueService;
 
 @Controller
@@ -53,7 +53,7 @@ public class ApplicatonController {
     @RequestMapping("/rescuePeopleWithVehicle")
     @ResponseBody
     Map<String, List<Person>> rescuePeopleWithVehicle(@RequestParam(value="ids", defaultValue="") List<String> ids, @RequestParam(value="vehicle", defaultValue="72") String vehicle){
-        return service.rescuePeopleWithVehicle(ids, vehicle);
+        return service.rescuePeopleWithVehicle(ids);
     }
 
     public static void main(String[] args) throws Exception {

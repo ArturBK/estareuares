@@ -11,51 +11,55 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.starwars.ab.domain.PeopleScans;
-import com.starwars.ab.domain.Person;
+import com.starwars.ab.domain.Specie;
+import com.starwars.ab.domain.SpeciesScan;
 
 @Component
-public class PlanetScanner {
+public class SpeciesScanner {
 	
-	private final String FIRSTPAGE = "http://swapi.co/api/people/?format=json&page=1";
+	private final String FIRSTPAGE = "http://swapi.co/api/species/?page=1&format=json";
 	private final String USERAGENT = "Mozilla/5.0 (Windows; U; Windows NT 6.1; rv:2.2) Gecko/20110201";
-
-	public List<Person> getAllPeople() {
-		return getPeopleFromScan(getAllScannedPlanet());
+	
+	
+	public List<Specie> allSpecies(){
+		return getSpeciesFromScan(getAllScan());
 	}
-
-	private List<Person> getPeopleFromScan(List<PeopleScans> allScannedPlanet) {
+	
+	private List<Specie> getSpeciesFromScan(List<SpeciesScan> allScanned) {
 		
-		return allScannedPlanet
+		return allScanned
 				.stream()
 				.filter(s -> s != null)
-				.flatMap(firstNode -> firstNode.getPerson().stream())
+				.flatMap(firstNode -> firstNode.getSpecies().stream())
 				.collect(Collectors.toList());
 	}
-
-	private List<PeopleScans> getAllScannedPlanet() {
+	
+	private List<SpeciesScan> getAllScan() {
 		ObjectMapper mapper = new ObjectMapper();
-		List<PeopleScans> jsonRequestsResult = new ArrayList<PeopleScans>();
+		List<SpeciesScan> jsonRequestsResult = new ArrayList<SpeciesScan>();
 		
 		try {
-			PeopleScans inicialScan = mapper.readValue(getPeopleJson(FIRSTPAGE), PeopleScans.class);
-			jsonRequestsResult.add(inicialScan);
-			String next = inicialScan.getNext();
+			SpeciesScan specie = mapper.readValue(getPeopleJson(FIRSTPAGE), SpeciesScan.class);
+			jsonRequestsResult.add(specie);
+			String next = specie.getNext();
 			
 			while(next != null){
-				PeopleScans newScan = mapper.readValue(getPeopleJson(next), PeopleScans.class);
-				jsonRequestsResult.add(newScan);
-				next= newScan.getNext();
+				System.out.println(next);
+
+				SpeciesScan newSpecie = mapper.readValue(getPeopleJson(next), SpeciesScan.class);
+				jsonRequestsResult.add(newSpecie);
+				next= newSpecie.getNext();
 			}
 
 		} catch (Exception e) {
-			System.out.println("O império venceu " + e.getMessage());
+			e.printStackTrace();
 		}
 		
 		return jsonRequestsResult;
 	}
 	
 	private String getPeopleJson(String page){
+		System.out.println("getPeopleJson");
 
 		RestTemplate rest = new RestTemplate();
 
@@ -67,8 +71,7 @@ public class PlanetScanner {
 		return response;
 	}
 	
-	public HttpHeaders getHttpHeaders()
-	{
+	public HttpHeaders getHttpHeaders(){
 		HttpHeaders headers = new HttpHeaders();
 		headers.set("User-Agent", USERAGENT);
 		return headers;

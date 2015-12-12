@@ -1,11 +1,11 @@
-package com.starwars.ab.model;
+package com.starwars.ab.domain;
 
 import java.util.Collections;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class Scans {
+public class PeopleScans {
 	
 		private int count;
 		private String next;

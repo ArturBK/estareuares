@@ -7,15 +7,15 @@ import java.util.List;
 import org.junit.Test;
 
 import com.google.common.collect.Lists;
-import com.starwars.ab.model.Person;
-import com.starwars.ab.service.SpeciesAnalysis;
+import com.starwars.ab.domain.Person;
+import com.starwars.ab.service.SpeciesScanner;
 
 
 public class SpaciesAnalysisTest {
 
 	@Test
 	public void getSpecie(){
-		assertEquals(2,new SpeciesAnalysis().groupBySpecie(Mock()).get("1").size());
+		assertEquals(2,new SpeciesScanner().groupBySpecie(Mock()).get("1").size());
 		
 	}
 

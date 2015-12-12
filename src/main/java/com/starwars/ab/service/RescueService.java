@@ -11,11 +11,9 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Multimap;
-import com.starwars.ab.model.Person;
+import com.starwars.ab.domain.Person;
+import com.starwars.ab.domain.Specie;
 
 @Service
 public class RescueService {
@@ -24,14 +22,18 @@ public class RescueService {
 	@Autowired
 	PlanetScanner plannetScanner;
 	@Autowired
-	SpeciesAnalysis speciesAnalysis;
+	SpeciesScanner speciesAnalysis;
+	@Autowired
+	Specie speciesDomain;
+	@Autowired
+	VehiclesInformation vehiclesInformation;
 	
 	public Map<String, List<Person>> rescuePeople(List<String> peopleIds){
 		
 		List<Person> allPeople = plannetScanner.getAllPeople();
 		List<Person> peopleToSave = getById(peopleIds, allPeople);
 		
-		return speciesAnalysis.groupBySpecie(peopleToSave);
+		return speciesDomain.groupBySpecie(peopleToSave);
 	}
 
 	private List<Person> getById(List<String> peopleIds, List<Person> people) {
@@ -39,32 +41,42 @@ public class RescueService {
 			      .filter(p -> peopleIds.contains(p.getId())).collect(Collectors.toList());
 	}
 
-	public Map<String, List<Person>> rescuePeopleWithVehicle(List<String> ids, String vehicle) {
+	public Map<String, List<Person>> rescuePeopleWithVehicle(List<String> ids) {
 		List<Person> allPeople = plannetScanner.getAllPeople();
 		List<Person> peopleToSave = getById(ids, allPeople);
-		Map<String, List<Person>> grouped = speciesAnalysis.groupBySpecie(peopleToSave);
-		
-		
-		int placesInVehicle = 4; //  "passengers": "4", 
-		
-		ListMultimap<String, List<Person>> travels = ArrayListMultimap.create();
-		
-		
-		travels.putAll((ancientsScapeFirst(grouped, placesInVehicle));
-		travels.putAll(separeteSpeciesInTheShips(grouped, placesInVehicle));
+		Map<String, List<Person>> grouped = speciesDomain.groupBySpecie(peopleToSave);
+				
+		Map<String, List<Person>> travels = new HashMap<String, List<Person>>();
+		travels.putAll(ancientsScapeFirst(grouped));
+		Map<String, List<Person>> remains = removeAncients(grouped);
+		travels.putAll(separeteSpeciesInTheShips(remains));
 							
 		return travels;
 	}
 
-	private ListMultimap<String, List<Person>> separeteSpeciesInTheShips(Map<String, List<Person>> grouped,
-			int placesInVehicle) {
-		ListMultimap<String, List<Person>> travels = ArrayListMultimap.create();
+	private Map<String, List<Person>> removeAncients(Map<String, List<Person>> grouped) {
+		
+		Map<String, List<Person>> travels = new HashMap<String, List<Person>>();
+
+		List<Person> ancients = getAncientsFromSpecies(grouped);
+		
+		for (Entry<String, List<Person>> specie : grouped.entrySet()){
+			specie.getValue().removeAll(ancients);
+			travels.put(specie.getKey(), specie.getValue());
+		}
+		
+		return travels;
+	}
+
+	private Map<String,List<Person>> separeteSpeciesInTheShips(Map<String, List<Person>> grouped) {
+		Map<String, List<Person>> travels = new HashMap<String, List<Person>>();
 		
 		for (Entry<String, List<Person>> speciesList : grouped.entrySet()){
-			List<List<Person>> smallerLists = Lists.partition(speciesList.getValue(), placesInVehicle);
+			List<List<Person>> smallerLists = Lists.partition(speciesList.getValue(), vehiclesInformation.getVehicleCapacitie());
 		
+			int count = 1; 
 			for (List<Person> people : smallerLists){
-				travels.put(speciesList.getKey(), people);
+				travels.put(+count + " SpaceShip With " + speciesAnalysis.specieNameById(speciesList.getKey()), people);
 			}
 			
 		}
@@ -72,15 +84,15 @@ public class RescueService {
 		return travels;
 	}
 
-	private Multimap<? extends String, ? extends List<Person>> ancientsScapeFirst(Map<String, List<Person>> grouped, int placesInVehicle) {
-		
-		List<Person> ancients = getAncientsFromSpecies(grouped);
-		List<List<Person>> smallerLists = Lists.partition(ancients, placesInVehicle);
+	private Map<String, List<Person>> ancientsScapeFirst(Map<String, List<Person>> grouped) {
 		
 		Map<String, List<Person>> travels = new HashMap<String, List<Person>>();
-
+		List<Person> ancients = getAncientsFromSpecies(grouped);
+		List<List<Person>> smallerLists = Lists.partition(ancients, vehiclesInformation.getVehicleCapacitie());
+		
+		int count = 1;
 		for (List<Person> people : smallerLists){
-			travels.put("Ancients", people);
+			travels.put(++count +" SpaceShip With ANCIENTS", people);
 		}
 		
 		return travels;
