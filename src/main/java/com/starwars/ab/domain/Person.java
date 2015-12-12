@@ -37,13 +37,11 @@ public class Person {
 	
 	public double getBirthYearSWDate(){
 		StarWarsDate swDate = new StarWarsDate();
-		
 		return swDate.convert(birthYear);
 	}
 	
 	public String getSpecieId(){
 		if (this.speciesUrls == null || this.speciesUrls.isEmpty()) return "unknow";
-		System.out.println(this.speciesUrls);
 
 		String[] parts = this.speciesUrls.get(0).split("/");
 		return parts[5];
@@ -51,7 +49,6 @@ public class Person {
 	
 	public String getId(){
 		if (this.url == null) return "unknow";
-		System.out.println(this.url);
 
 		String[] parts = this.url.split("/");
 		return parts[5];

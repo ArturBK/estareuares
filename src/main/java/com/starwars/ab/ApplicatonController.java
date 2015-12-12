@@ -1,6 +1,5 @@
 package com.starwars.ab;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -28,26 +27,6 @@ public class ApplicatonController {
     @ResponseBody
     String home() {
         return "Running!";
-    }
-    
-    @RequestMapping("/rescuePeopleWithMockedIds")
-    @ResponseBody
-    Map<String, List<Person>> rescuePeopleWithMockedIds() {
-    	
-		System.out.println("Início");
-
-    	List<String> peopleIds= new ArrayList<String>();
-    	peopleIds.add("1");
-    	peopleIds.add("42");
-    	peopleIds.add("5");
-    	peopleIds.add("5");
-        return service.rescuePeople(peopleIds);
-    }
-    
-    @RequestMapping("/rescuePeople")
-    @ResponseBody
-    Map<String, List<Person>> rescuePeople(@RequestParam(value="ids", defaultValue="") List<String> ids){
-        return service.rescuePeople(ids);
     }
     
     @RequestMapping("/rescuePeopleWithVehicle")

@@ -8,15 +8,14 @@ import org.junit.Test;
 
 import com.google.common.collect.Lists;
 import com.starwars.ab.domain.Person;
-import com.starwars.ab.service.SpeciesScanner;
+import com.starwars.ab.domain.Specie;
 
 
 public class SpaciesAnalysisTest {
 
 	@Test
 	public void getSpecie(){
-		assertEquals(2,new SpeciesScanner().groupBySpecie(Mock()).get("1").size());
-		
+		assertEquals(2,new Specie().groupBySpecie(Mock()).get("1").size());
 	}
 
 	private List<Person> Mock() {

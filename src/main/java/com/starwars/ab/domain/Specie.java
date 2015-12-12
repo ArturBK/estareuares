@@ -5,9 +5,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.starwars.ab.service.SpeciesScanner;
+import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+@Component
 public class Specie {
 
     public String name;
@@ -29,7 +31,7 @@ public class Specie {
 	@JsonProperty("skin_colors")
     public String skinColors;
 
-	@JsonProperty("home_world")
+	@JsonProperty("homeworld")
     public String homeWorld;
 
     public String language;
@@ -44,12 +46,9 @@ public class Specie {
     public ArrayList<String> filmsUrls;
 	
 
-	public String specieNameById(String id){
-		SpeciesScanner scan = new SpeciesScanner();
-		List<Specie> speciesList = scan.allSpecies();
-		Specie specie = speciesList.stream().filter(s -> s.getId() == id).collect(Collectors.toList()).get(0);
-
-		return specie.getName();
+	public String specieNameById(String id, List<Specie> speciesList){
+		List<Specie> specie = speciesList.stream().filter(s -> s.getId().equalsIgnoreCase(id)).collect(Collectors.toList());
+		return specie == null ? "Unknow" : specie.get(0).getName();
 	}
 
 	public Map<String, List<Person>> groupBySpecie(List<Person> people) {
@@ -57,8 +56,7 @@ public class Specie {
 	}
     
 	public String getId(){
-		if (this.url == null) return "unknow";
-		System.out.println(this.url);
+		if (this.url == null) return "Unknow";
 
 		String[] parts = this.url.split("/");
 		return parts[5];
