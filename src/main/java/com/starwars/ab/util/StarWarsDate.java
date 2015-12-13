@@ -2,7 +2,7 @@ package com.starwars.ab.util;
 
 public class StarWarsDate {
 
-	private final double UNKNOW = -10000;
+	private final double UNKNOW = 10000;
 	
 	public double convert(String dateString){
 		

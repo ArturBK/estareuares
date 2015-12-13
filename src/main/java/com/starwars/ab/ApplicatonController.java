@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.starwars.ab.domain.Person;
 import com.starwars.ab.service.RescueService;
+import com.starwars.ab.util.EasterEgg;
 
 @Controller
 @EnableAutoConfiguration
@@ -34,6 +35,13 @@ public class ApplicatonController {
     Map<String, List<Person>> rescuePeopleWithVehicle(@RequestParam(value="ids", defaultValue="") List<String> ids, @RequestParam(value="vehicle", defaultValue="72") String vehicle){
         return service.rescuePeopleWithVehicle(ids);
     }
+    
+    @RequestMapping("/easterEgg")
+    @ResponseBody
+    String easterEgg(){
+        return EasterEgg.easterEgg();
+    }
+
 
     public static void main(String[] args) throws Exception {
         SpringApplication.run(ApplicatonController.class, args);

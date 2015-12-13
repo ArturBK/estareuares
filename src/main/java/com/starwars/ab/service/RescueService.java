@@ -3,6 +3,7 @@ package com.starwars.ab.service;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -21,29 +22,26 @@ public class RescueService {
 	@Autowired SpeciesScanner speciesAnalysis;
 	@Autowired Specie speciesDomain;
 	@Autowired VehiclesInformation vehiclesInformation;
-	
-	public Map<String, List<Person>> rescuePeople(List<String> peopleIds){
-		
-		List<Person> allPeople = plannetScanner.getAllPeople();
-		List<Person> peopleToSave = getById(peopleIds, allPeople);
-		
-		return speciesDomain.groupBySpecie(peopleToSave);
-	}
 
 	public Map<String, List<Person>> rescuePeopleWithVehicle(List<String> ids) {
 		List<Person> allPeople = plannetScanner.getAllPeople();
-		List<Person> peopleToSave = getById(ids, allPeople);
+		List<Person> peopleToSave = getPeopleById(ids, allPeople);
 		Map<String, List<Person>> grouped = speciesDomain.groupBySpecie(peopleToSave);
-				
-		Map<String, List<Person>> travels = new HashMap<String, List<Person>>();
+											
+		return organizeTravels(grouped);
+	}
+
+	private Map<String, List<Person>> organizeTravels(Map<String, List<Person>> grouped) {
+		Map<String, List<Person>> travels = new LinkedHashMap<String, List<Person>>();
+		
 		travels.putAll(ancientsScapeFirst(grouped));
 		Map<String, List<Person>> remains = removeAncients(grouped);
 		travels.putAll(separeteSpeciesInTheShips(remains));
-							
+		
 		return travels;
 	}
 	
-	private List<Person> getById(List<String> peopleIds, List<Person> people) {
+	private List<Person> getPeopleById(List<String> peopleIds, List<Person> people) {
 		return people.stream()
 			      .filter(p -> peopleIds.contains(p.getId())).collect(Collectors.toList());
 	}
@@ -63,17 +61,16 @@ public class RescueService {
 	}
 
 	private Map<String,List<Person>> separeteSpeciesInTheShips(Map<String, List<Person>> grouped) {
-		Map<String, List<Person>> travels = new HashMap<String, List<Person>>();
+		Map<String, List<Person>> travels = new LinkedHashMap<String, List<Person>>();
 		
-		SpeciesScanner scan = new SpeciesScanner();
-		List<Specie> speciesList = scan.allSpecies();
+		List<Specie> speciesList = speciesAnalysis.allSpecies();
 		
+		int count = 0; 
 		for (Entry<String, List<Person>> speciesPeopleList : grouped.entrySet()){
 			List<List<Person>> smallerLists = Lists.partition(speciesPeopleList.getValue(), vehiclesInformation.getVehicleCapacitie());
 		
-			int count = 1; 
 			for (List<Person> people : smallerLists){
-				travels.put(+count + " SpaceShip With " + speciesDomain.specieNameById(speciesPeopleList.getKey(), speciesList), people);
+				travels.put(++count + " SpaceShip With " + speciesDomain.specieNameById(speciesPeopleList.getKey(), speciesList), people);
 			}
 		}
 		
@@ -86,9 +83,9 @@ public class RescueService {
 
 	private Map<String, List<Person>> separeteByShip(List<Person> ancients) {
 		List<List<Person>> smallerLists = Lists.partition(ancients, vehiclesInformation.getVehicleCapacitie());
-		Map<String, List<Person>> travels = new HashMap<String, List<Person>>();
+		Map<String, List<Person>> travels = new LinkedHashMap<String, List<Person>>();
 
-		int count = 1;
+		int count = 0;
 		for (List<Person> people : smallerLists){
 			travels.put(++count +" SpaceShip With ANCIENTS", people);
 		}
